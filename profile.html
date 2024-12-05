@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-zinc-900 via-black to-zinc-800 min-h-screen text-zinc-200">
+ <nav class="bg-gradient-to-b from-zinc-900 to-zinc-800/50 border-b border-zinc-700/30 p-6 sticky top-0 z-10 backdrop-blur-md">
+   <div class="container mx-auto flex justify-between items-center">
+       <div class="flex items-center gap-4">
+           <div class="w-20 h-10 rounded-lg bg-violet-500/20 flex items-center justify-center">
+               <span class="text-violet-400 font-bold">Reboot</span>
+           </div>
+           <h1 class="text-xl font-bold bg-gradient-to-r from-violet-400 to-blue-400 bg-clip-text text-transparent">Dashboard</h1>
+       </div>
+       <button id="logoutBtn" class="px-4 py-2 bg-zinc-800/80 rounded-lg hover:bg-zinc-700/80 transition-colors border border-zinc-700/50">Logout</button>
+   </div>
+</nav>
+
+<main class="container mx-auto p-6">
+   <!-- Profile Card with Gradient Border -->
+   <div class="relative p-[1px] rounded-xl bg-gradient-to-r from-violet-500/50 via-blue-500/50 to-violet-500/50 mb-6">
+       <div class="bg-zinc-900/90 rounded-xl p-8">
+           <div class="flex items-center gap-6">
+               <!-- Avatar with Gradient -->
+               <div class="relative">
+                   <div class="w-20 h-20 rounded-full bg-gradient-to-br from-violet-500/20 to-blue-500/20 flex items-center justify-center">
+                       <span class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-br from-violet-400 to-blue-400" id="userInitials">...</span>
+                   </div>
+                   <div class="absolute -bottom-1 -right-1 w-6 h-6 bg-zinc-800 rounded-full border-2 border-zinc-900 flex items-center justify-center">
+                       <div class="w-2 h-2 rounded-full bg-emerald-400"></div>
+                   </div>
+               </div>
+               
+               <!-- User Info -->
+               <div>
+                   <h2 id="userName" class="text-2xl font-bold text-zinc-100 mb-1">...</h2>
+                   <p id="userCampus" class="text-zinc-400 mb-2"></p>
+                   <div class="flex gap-4">
+                       <span class="px-3 py-1 rounded-full bg-zinc-800/50 border border-zinc-700/50 text-xs text-zinc-400">
+                           Joined <span id="userJoinDate" class="text-zinc-300"></span>
+                       </span>
+                       <span class="px-3 py-1 rounded-full bg-zinc-800/50 border border-zinc-700/50 text-xs text-zinc-400">
+                           ID: <span id="userId" class="text-zinc-300"></span>
+                       </span>
+                   </div>
+               </div>
+           </div>
+       </div>
+   </div>
+
+   <!-- Audit Stats with Gradient Border -->
+   <div class="relative p-[1px] rounded-xl bg-gradient-to-r from-violet-500/50 via-blue-500/50 to-violet-500/50">
+       <div class="bg-zinc-900/90 rounded-xl p-8">
+           <h2 class="text-2xl font-bold text-center mb-8 bg-gradient-to-r from-violet-400 to-blue-400 bg-clip-text text-transparent">Audit Performance</h2>
+           
+           <div class="space-y-8">
+               <!-- Ratio Display -->
+               <div class="text-center bg-gradient-to-b from-violet-500/10 to-blue-500/10 rounded-lg p-6 border border-zinc-800">
+                   <div id="audit-ratio" class="text-5xl bg-gradient-to-r from-violet-400 to-blue-400 bg-clip-text text-transparent font-bold">0.00</div>
+                   <div id="audit-message" class="text-zinc-400 mt-2">Make more audits!</div>
+               </div>
+
+               <!-- Progress Bars -->
+               <div class="space-y-6">
+                   <div>
+                       <div class="flex justify-between text-zinc-400 mb-2">
+                           <span>Done</span>
+                           <span id="audit-made-value-right">0 KB</span>
+                       </div>
+                       <div class="h-2 bg-zinc-800 rounded-full">
+                           <div id="audit-made-bar" class="h-full bg-gradient-to-r from-violet-500 to-blue-500 rounded-full transition-all duration-500"></div>
+                       </div>
+                   </div>
+
+                   <div>
+                       <div class="flex justify-between text-zinc-400 mb-2">
+                           <span>Received</span>
+                           <span id="audit-received-value-right">0 KB</span>
+                       </div>
+                       <div class="h-2 bg-zinc-800 rounded-full">
+                           <div id="audit-received-bar" class="h-full bg-gradient-to-r from-blue-500 to-violet-500 rounded-full transition-all duration-500"></div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+       </div>
+   </div>
+
+   <div class="relative p-[1px] rounded-xl bg-gradient-to-r from-violet-500/50 via-blue-500/50 to-violet-500/50 mt-6">
+    <div class="bg-zinc-900/90 rounded-xl p-8">
+        <h2 class="text-2xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-blue-400">
+            Audit Performance
+        </h2>
+        <h3 class="text-sm font-medium text-violet-400 mt-2 mb-4">
+            Total Audits Done: <span id="totalAuditsDone" class="font-bold"></span>
+        </h3>
+        <div id="audit-chart-container" class="h-64">
+            <svg id="audit-chart" class="w-full h-full"></svg>
+        </div>
+    </div>
+ </div>
+</main>
+
+    <script src="scripts/profile.js"></script>
+</body>
+</html>
