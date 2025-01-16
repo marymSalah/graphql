@@ -31,6 +31,7 @@ window.addEventListener('load', async () => {
             displayUserData(user);
             displayAuditRatio(token, user.login);
             fetchAuditsGiven(user.id);
+            fetchXpPerProject();
         }
     } catch (error) {
         console.error('Failed to fetch data:', error);
@@ -51,17 +52,12 @@ async function fetchAuditsGiven(userid) {
         }
     `;
 
-    const variables = { userid: parseInt(userid, 10) };  // Ensure userid is an integer
+    const variables = { userid: parseInt(userid, 10) };  
 
     const data = await makeGraphQLRequest(query, variables);
     displayPieChart(data.data.audit);
     console.log("audits", data);
 }
-
-
-
-
-
 
 async function displayPieChart(audits) {
     const svgContainer = document.getElementById('audit-chart');
@@ -182,10 +178,6 @@ async function displayPieChart(audits) {
  }
 
 
-
-
-
-
 async function fetchAuditsReceived(token, username) {
     const query = `{
         user(where: {login: {_eq: "${username}"}}) {
@@ -272,12 +264,10 @@ function calculateTotalAmount(transactions) {
     return transactions.reduce((total, t) => total + t.amount, 0);
 }
 
-
 function calculateRatio(auditsMade, auditsReceived) {
     if (auditsReceived === 0) return 0;
     return (auditsMade / auditsReceived).toFixed(2);
 }
-
 
 function displayUserData(user) {
     // Set initials
@@ -312,3 +302,132 @@ async function makeGraphQLRequest(query, variables = {}) {
 
     return JSON.parse(responseText);
 }
+
+async function fetchXpPerProject() {
+    const query = `
+    query{
+        transaction(where: {
+            type: {_eq: "xp"},
+            object: {
+                type: {_eq: "project"}
+            }
+        }) {
+            amount
+            path
+            createdAt
+            object {
+                name 
+                type
+            }
+        }
+    }`;
+ 
+    try {
+        const data = await makeGraphQLRequest(query);
+        const transactions = data.data.transaction;
+ 
+        const xpByProject = {};
+        transactions.forEach(t => {
+            const projectPath = t.path;
+            if (!xpByProject[projectPath]) {
+                xpByProject[projectPath] = 0;
+            }
+            xpByProject[projectPath] += t.amount;
+        });
+ 
+        const chartData = Object.entries(xpByProject)
+            .map(([path, amount]) => ({
+                project: path.split('/').pop(),
+                xp: amount
+            }))
+            .sort((a, b) => b.xp - a.xp);
+ 
+        const svgContainer = document.getElementById('xp-chart');
+        const width = svgContainer.clientWidth;
+        const height = svgContainer.clientHeight;
+        const margin = { top: 30, right: 30, bottom: 80, left: 70 }; // Increased bottom margin
+        const chartWidth = width - margin.left - margin.right;
+        const chartHeight = height - margin.top - margin.bottom;
+ 
+        const maxXP = Math.max(...chartData.map(d => d.xp));
+        const barWidth = chartWidth / chartData.length;
+ 
+        let svg = `
+        <svg width="100%" height="100%" viewBox="0 0 ${width} ${height}">
+            <defs>
+                <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#EC4899" />
+                    <stop offset="100%" stop-color="#BE185D" />
+                </linearGradient>
+            </defs>
+            <g transform="translate(${margin.left}, ${margin.top})">`;
+ 
+        // Y-axis grid lines and labels
+        const yTicks = 5;
+        for (let i = 0; i <= yTicks; i++) {
+            const y = chartHeight * (i / yTicks);
+            const xpValue = Math.round((maxXP * (1 - i / yTicks)));
+            svg += `
+                <line 
+                    x1="0" 
+                    y1="${y}" 
+                    x2="${chartWidth}" 
+                    y2="${y}" 
+                    stroke="#374151" 
+                    stroke-dasharray="2,2"
+                />
+                <text 
+                    x="-10" 
+                    y="${y}" 
+                    text-anchor="end" 
+                    alignment-baseline="middle"
+                    class="fill-gray-400 text-xs"
+                >${xpValue}</text>
+            `;
+        }
+ 
+        // Bars and X-axis labels
+        chartData.forEach((d, i) => {
+            const barHeight = (d.xp / maxXP) * chartHeight;
+            svg += `
+                <g>
+                    <rect
+                        x="${i * barWidth + 5}"
+                        y="${chartHeight - barHeight}"
+                        width="${barWidth - 10}"
+                        height="${barHeight}"
+                        fill="url(#barGradient)"
+                        rx="4"
+                        filter="drop-shadow(0 4px 6px rgb(0 0 0 / 0.1))"
+                        class="transition-all duration-300 hover:opacity-80"
+                    >
+                        <title>${d.project}: ${d.xp.toLocaleString()} XP</title>
+                    </rect>
+                    <text
+                        x="${i * barWidth + barWidth/2}"
+                        y="${chartHeight + 30}"
+                        text-anchor="middle"
+                        transform="rotate(-45, ${i * barWidth + barWidth/2}, ${chartHeight + 30})"
+                        class="fill-gray-300 text-sm font-medium"
+                    >${d.project}</text>
+                </g>
+            `;
+        });
+ 
+        // Chart title
+        svg += `
+            <text
+                x="${chartWidth/2}"
+                y="-10"
+                text-anchor="middle"
+                class="fill-white text-sm font-bold"
+            >XP Earned per Project</text>
+        </g>
+        </svg>`;
+ 
+        svgContainer.innerHTML = svg;
+ 
+    } catch (error) {
+        console.error('Error fetching XP per project:', error);
+    }
+ }
